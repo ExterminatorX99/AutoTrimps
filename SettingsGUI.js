@@ -283,6 +283,7 @@ function initializeAllSettings() {
 
     //Line 2
     createSetting('fastallocate', 'Fast Allocate', 'Turn on if your helium is above 500Qa. Not recommended for low amounts of helium. ', 'boolean', false, null, 'Core');
+    createSetting('fastallocateMult', 'Fast Allocate Multiplier', 'Multiplier used for Fast Allocate. Higher number makes it faster but sacrafices percision. ', 'value', 10, null, "Core");
     createSetting('TrapTrimps', 'Trap Trimps', 'Automatically trap trimps when needed, including building traps. (when you turn this off, you may aswell turn off the in-game autotraps button, think of the starving trimps that could eat that food!)', 'boolean', true, null, "Core");
     createSetting('AutoEggs', 'AutoEggs', 'Click easter egg if it exists, upon entering a new zone. Warning: Quite overpowered. Please solemnly swear that you are up to no good.', 'boolean', false, null, 'Core');
     createSetting('AutoBoneChargeMax', ['Manual Bone Charge', 'Bone Charge When Max', 'Bone Charge (Daily Only)'], 'Automatically uses a Bone Charge from the Bone Shrine if you are at max charges. The start zone can be configured under <i>Bone Charge Start Z.</i><br><br><b>Bone Charge (Daily Only)</b> as the name suggests; will only use a Bone Charge when at max and if on a daily challenge.<br><br><b>Default: Off (Manual Bone Charge).</b>', 'multitoggle', 0, null, "Core");

@@ -419,6 +419,7 @@ AutoPerks.spendHelium2 = function(helium) {
         return false;
     }
 
+    const mult = getPageSetting('fastallocateMult');
     var mostEff, price, inc;
     var packPrice,packLevel;
     var i=0;
@@ -433,7 +434,7 @@ AutoPerks.spendHelium2 = function(helium) {
         if(mostEff.level < mostEff.max) {
             var t2 = mostEff.name.endsWith("_II");
             if (t2) {
-                packLevel = mostEff.increase * 10;
+                packLevel = mostEff.increase * mult;
                 packPrice = AutoPerks.calculateTotalPrice(mostEff, mostEff.level + packLevel) - mostEff.spent;
             }
             if (t2 && packPrice <= helium) {
@@ -459,10 +460,13 @@ AutoPerks.spendHelium2 = function(helium) {
         var index = $selector.selectedIndex;
         var dumpPerk = AutoPerks.getPerkByName($selector[index].innerHTML);
         if(dumpPerk.level < dumpPerk.max) {
-            for(price = AutoPerks.calculatePrice(dumpPerk, dumpPerk.level); price < helium && dumpPerk.level < dumpPerk.max; price = AutoPerks.calculatePrice(dumpPerk, dumpPerk.level)) {
+            let nextLevel = dumpPerk.level * 1.1;
+            const calcPrice = () => AutoPerks.calculateTotalPrice(dumpPerk, nextLevel) - dumpPerk.spent;
+            for(price = calcPrice(); price < helium && dumpPerk.level < dumpPerk.max; price = calcPrice()) {
                 helium -= price;
                 dumpPerk.spent += price;
-                dumpPerk.level++;
+                dumpPerk.level = nextLevel;
+                nextLevel *= 2;
             }
         }
         var dumpresults = heb4dump - helium;
@@ -470,11 +474,12 @@ AutoPerks.spendHelium2 = function(helium) {
     }
     
     var heB4round2 = helium;
-    while (effQueue.size > 1) {
-        mostEff = effQueue.poll();
-        if (mostEff.level >= mostEff.max) continue;
+    var i = 0;
+    var j = 0;
+    const finePass = (mostEff) => {
+        if (mostEff.level >= mostEff.max) return;
         price = AutoPerks.calculatePrice(mostEff, mostEff.level);
-        if (price >= helium) continue;
+        if (price >= helium) return;
         helium -= price;
         mostEff.level++;
         mostEff.spent += price;
@@ -482,9 +487,30 @@ AutoPerks.spendHelium2 = function(helium) {
         price = AutoPerks.calculatePrice(mostEff, mostEff.level);
         mostEff.efficiency = inc/price;
         effQueue.add(mostEff);
+        i++;
+        j++;
+    }
+    const roughPass = (mostEff) => {
+        if (mostEff.level >= mostEff.max) return;
+        price = AutoPerks.calculateTotalPrice(mostEff, mostEff.level * 1.1) - mostEff.spent;
+        if (price >= helium) return;
+        helium -= price;
+        mostEff.level *= 2;
+        mostEff.spent += price;
+        inc = AutoPerks.calculateIncrease(mostEff, mostEff.level);
+        price = AutoPerks.calculatePrice(mostEff, mostEff.level);
+        mostEff.efficiency = inc/price;
+        effQueue.add(mostEff);
+        i++;
+        j = 0;
+    }
+    while (effQueue.size > 1) {
+        mostEff = effQueue.poll();
+        if (j < 1000) finePass(mostEff);
+        else roughPass(mostEff);
     }
     var r2results = heB4round2 - helium;
-    debug("AutoPerks2: Pass Two Complete. Cleanup Spent Any Leftover Helium: " + prettify(r2results) + " He.","perks");
+    debug("AutoPerks2: Pass Two Complete after " + i + " iterations. Cleanup Spent Any Leftover Helium: " + prettify(r2results) + " He.","perks");
 }
 
 
@@ -735,7 +761,7 @@ MODULES["perks"].RshowDetails = true;
 var Rhead = document.getElementsByTagName('head')[0];
 var Rqueuescript = document.createElement('script');
 queuescript.type = 'text/javascript';
-queuescript.src = 'https://Zorn192.github.io/AutoTrimps/FastPriorityQueue.js';
+queuescript.src = 'https://.github.io/AutoTrimps/FastPriorityQueue.js';
 head.appendChild(queuescript);
 //[looting,toughness,power,motivation,pheromones,artisanistry,carpentry,prismal,equality,criticality,resilience,tenacity,greed,frenzy]
 var preset_Rspace = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
@@ -1378,9 +1404,9 @@ RAutoPerks.initializePerks = function () {
     observation.exprate = 2;
     championism.exprate = 5;
     //scruffy
-	//no
+    //no
     //tier2
-	//no
+    //no
     RAutoPerks.perkHolder = [range, agility, bait, trumps, packrat, hunger, observation, /*overkill,*/ looting, toughness, power, motivation, pheromones, artisanistry, carpentry, prismal, resilience, criticality, tenacity, greed, frenzy, championism, equality];
     for(var i in RAutoPerks.perkHolder) {
         RAutoPerks.perkHolder[i].radLevel = 0;
